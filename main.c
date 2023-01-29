@@ -3,6 +3,7 @@
 #include<process.h>
 #include<stdlib.h>
 #include<dir.h>
+#include<string.h>
 void inputcommand(char string[]){
     scanf("%s",string);
 }
@@ -12,23 +13,17 @@ char getcharx(){
     return c;
 }
 
-void getcot(char string[]){
-    int counter=0;
-    char c,d,e;
-    while(1){
-        c=getcharx();
-        if(c=='"' && string[counter-1]!='\\')
-            break;
-        else if(c=='\\'){
-            if((d=getcharx())=='"')
-                string[counter]=d;
-            else if((d=getcharx())=='\n'){
-                    
-            }
-        }
-        else string[counter]=c;
+void inputtext(char string[]){
+    char c;
+    int counter=1;
+    while((c=getcharx())!=' '){
+        string[counter]= c;
         counter++;
     }
+}
+
+void getsx(char string[]){
+    gets(string);
 }
 
 void create_folder(char *dirname) {
@@ -78,7 +73,7 @@ void createwithoutcot(){
 void createwithcot(){
     char file[70],ourroot[70],ourfile[30];
     char dirname[60] = "C:\\Users\\Amirhosein";
-    gets(file);
+    getsx(file);
     //printf("%s",file);
     char *e;
     e = strrchr(file, '\\');
@@ -107,49 +102,159 @@ void createwithcot(){
     fclose(ptr);
 }
 
+void getcot(char string[]){
+    int counter=0;
+    char c,d,e;
+    while(1){
+        c=getcharx();
+        if(c=='"' && string[counter-1]!='\\')
+            break;
+        else if(c=='\\'){
+            if((d=getcharx())=='"')
+                string[counter]=d;
+            else if(d=='n')
+                string[counter]='\n';
+            else if(d=='\\'){
+                if((e=getcharx())=='n'){
+                    string[counter]='\\';
+                    string[++counter]=e;
+                }
+            }
 
-void fileinserterspace(){
-    char root[70]={0},ourpath[70]={0},c;
-    char dir[30]="C:\\Users\\Amirhosein";
+        }
+        else
+            string[counter]=c;
+        counter++;
+    }
+}
+
+void fileinserterspace() {
+    char root[70] = {0}, c;
+    char dir[30] = "C:\\Users\\Amirhosein";
     getcot(root);
     //printf("%s",root);
-    for (int i = 0 ,j=0; i<strlen(root) ; ++i,j++) {
-        ourpath[j]=root[i];
+//    for (int i = 0 ,j=0; i<strlen(root) ; ++i,j++) {
+//        ourpath[j]=root[i];
 //        if(root[i]=='\\' && root[i+1]!='"')
 //            ourpath[++j]='\\';
-    }
+//    }
     char *ourroot;
-    ourroot = strcat(dir,ourpath);
+    ourroot = strcat(dir, root);
     //printf("%s",ourroot);
-    FILE *ptr=fopen(ourroot,"w");
-    if(ptr==NULL)
-        printf("File could not be created or be opened\n");
+    FILE *ptr = fopen(ourroot, "r+");
     char com[8];
-    char text[200];
-    inputcommand(com);
-    if((c=getcharx())=='"')
-        getcot(text);
-    fclose(ptr);
+    char text[500],saver[200],saver2[200];
+    long int line=0,pos=0,entercounter=1,entercounter2=0,entercounter3=1,size=0,size2=0;
+    char *whole;
+    if (ptr == NULL) {
+        printf("File could not be created or be opened try again\n");
+    }
+    else {
+        inputcommand(com);
+        if (strcmp(com, "--str") == 0) {
+            getchar();
+            if ((c = getcharx()) == '"')
+                getcot(text);
+            else
+                inputtext(text);
+            inputcommand(com);
+            if (strcmp(com, "--pos") == 0) {
+                scanf("%ld%c%ld", &line, &c, &pos);
+                while (fgets(saver, 200, ptr) != NULL) {
+                    if(entercounter<line)
+                        entercounter2+= strlen(saver);
+                    entercounter++;
+                }
+                //printf("%ld %d",entercounter2,entercounter);
+                if(line<=entercounter){
+                    rewind(ptr);
+                    //printf("%ld %s %ld %ld ", ftell(ptr),text,line,pos);
+                    while (fgets(saver, 200, ptr) != NULL) {
+                        if(entercounter3==line) {
+                            size = strlen(saver);
+                            //printf("%d", size);
+                            if (size >= pos) {
+                                size2 = strlen(text);
+                                fseek(ptr, entercounter2 + pos, SEEK_SET);
+                                long int j = 0;
+                                for (long int i = entercounter2 + pos+1; (c = fgetc(ptr)) != EOF; ++i) {
+                                    saver2[j++] = c;
+                                }
+                                saver2[j] = '\0';
+                                whole = strcat(text, saver2);
+                                //printf("%s", whole);
+                                // printf("%d %d", ftell(ptr), pos);
+                                fseek(ptr, entercounter2 + pos+1, SEEK_SET);
+                                fputs(text, ptr);
+
+                                fclose(ptr);
+                                break;
+                            } else if (size < pos) {
+                                printf("You cant write in that position\n");
+                                fclose(ptr);
+                                break;
+                            }
+                        }
+                        else
+                            entercounter3++;
+
+                    }
+
+                }
+                else {
+                    printf("you cant write in that line\n");
+                    fclose(ptr);
+                }
+            }
+            else {
+                printf("Invalid input try again\n");
+                fclose(ptr);
+            }
+        }
+        else {
+            printf("Invalid input try again\n");
+            fclose(ptr);
+        }
+
+    }
 }
 
  void fileinserternonspace(){
-    char root[70]={0},ourpath[70]={0};
+    char root[70]={0};
     char dir[30]="C:\\Users\\Amirhosein\\";
     inputcommand(root);
-    for (int i = 0 ,j=0; i<strlen(root) ; ++i,j++) {
-        ourpath[j]=root[i];
-       // if(root[i]=='\\' && root[i+1]!='"')
-           // ourpath[++j]='\\';
-    }
+//    for (int i = 0 ,j=0; i<strlen(root) ; ++i,j++) {
+//        ourpath[j]=root[i];
+//       // if(root[i]=='\\' && root[i+1]!='"')
+//           // ourpath[++j]='\\';
+//    }
     char * ourroot;
-    ourroot= strcat(dir,ourpath);
+    ourroot= strcat(dir,root);
    // printf("%s",ourroot);
     FILE *ptr=fopen(ourroot,"w");
-     if(ptr==NULL)
-         printf("File could not be created or be opened\n");
-     char com[8];
-     inputcommand(com);
-     fclose(ptr);
+     char com[8],c;
+     char text[200];
+     int line=0,pos=0;
+     if (ptr == NULL) {
+         printf("File could not be created or be opened try again\n");
+     }
+     else {
+         inputcommand(com);
+         if (strcmp(com, "--str" )== 0) {
+             if ((c = getcharx()) == '"')
+                 getcot(text);
+             else
+                 inputcommand(text);
+             inputcommand(com);
+             scanf("%d%c%d",&line,&c,&pos);
+             fclose(ptr);
+         }
+         else {
+             printf("Invalid input try again\n");
+             fclose(ptr);
+         }
+
+     }
 
 }
 int main() {
