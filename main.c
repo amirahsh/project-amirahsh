@@ -159,7 +159,7 @@ void fileinserterspace() {
     ourroot = strcat(dir, root);
     //printf("%s %s",ourroot,root);
     FILE *ptr = fopen(ourroot, "r+");
-    char com[8],e;
+    char com[8];
     char text[500],saver[200],saver2[200];
     long int line=0,pos=0,entercounter=1,entercounter2=0,entercounter3=1,size=0;
     char *whole;
@@ -263,7 +263,7 @@ void fileinserterspace() {
     ourroot= strcat(dir,root);
     //printf("%s",ourroot);
     FILE *ptr=fopen(ourroot,"r+");
-     char com[8],c,e;
+     char com[8],c;
      char text[500],saver[200],saver2[200];
      long int line=0,pos=0,entercounter=1,entercounter2=0,entercounter3=1,size=0;
      char *whole;
@@ -353,17 +353,60 @@ void fileinserterspace() {
      }
 
 }
+
+void cat(){
+    char c,s;
+    char root[70]={0};
+    char dir1[30]="C:\\Users\\Amirhosein\\";
+    char dir[30] = "C:\\Users\\Amirhosein";
+    char * ourroot,*saver;
+    c=getcharx();
+    if(c=='\\') {
+        inputcommand(root);
+        ourroot= strcat(dir1,root);
+        //printf("%s",ourroot);
+        FILE *ptr=fopen(ourroot,"r");
+        if (ptr == NULL) {
+            printf("File could not be created or be opened try again\n");
+        }
+        else {
+            while((s=fgetc(ptr))!=EOF) {
+                printf("%c",s);
+            }
+//            while (!feof(ptr)) {
+//                saver=fgets(saver, 200, ptr);
+//                printf("%s\n", saver);
+//            }
+        }
+        fclose(ptr);
+    }
+    else  if(c=='"') {
+        getcot(root);
+        ourroot = strcat(dir, root);
+        //printf("%s %s",ourroot,root);
+        FILE *ptr = fopen(ourroot, "r");
+        if (ptr == NULL) {
+            printf("File could not be created or be opened try again\n");
+        }
+        else {
+            while((s=fgetc(ptr))!=EOF) {
+                printf("%c",s);
+            }
+        }
+        fclose(ptr);
+    }
+}
 int main() {
     char com[15],com2[8],c;
     printf("User Guide:\n A:for creating file or folder:\n   1-createfile --file <file name and address>\n   2-createfile --file <\"file name and address\">"
            "(if your folder or your filenames have space\n   *Note:if you are willing to create folders only type '\\' at the end\n   Example:\\root\\1\\abc.txt\n"
-           " B:insertfile:\n    1-insertstr –file <file name> –str <str> —pos <line no>:<start position>\n    2-You can enter string or filename with cotation same as createfile"
+           " B:insertfile:\n    1-insertstr --file <file name> –str <str> --pos <line no>:<start position>\n    2-You can enter string or filename with cotation same as createfile"
            "command\n");
     inputcommand(com);
     while(strcmp(com,"exit")!=0){
         if(strcmp(com,"createfile")==0){
             inputcommand(com2);
-            getchar();
+            getcharx();
             if(strcmp(com2,"--file")==0){
                 c=getcharx();
                 if(c=='\\')
@@ -376,7 +419,7 @@ int main() {
         }
         else if(strcmp(com,"insertstr")==0) {
             inputcommand(com2);
-            getchar();
+            getcharx();
             if (strcmp(com2, "--file") == 0) {
                 c=getcharx();
                 if(c=='\\') {
@@ -389,9 +432,18 @@ int main() {
                     printf("Invalid Input\n");
             }
         }
+        else if(strcmp(com,"cat")==0) {
+            inputcommand(com2);
+            getcharx();
+            if(strcmp(com2,"--file")==0){
+                cat();
+            }
+            else
+                printf("Invalid Input\n");
+        }
         else {
             if(getcharx()=='\n')
-                printf("Invalid Input\n");
+                printf("Invalid Input");
         }
         inputcommand(com);
     }
