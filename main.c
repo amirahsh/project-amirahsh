@@ -13,15 +13,6 @@ char getcharx(){
     return c;
 }
 
-void inputtext(char string[]){
-    char c;
-    int counter=1;
-    while((c=getcharx())!=' '){
-        string[counter]= c;
-        counter++;
-    }
-}
-
 void getsx(char string[]){
     gets(string);
 }
@@ -66,7 +57,7 @@ void createwithoutcot(){
     if(ptr==NULL)
         printf("File could not be created \n");
     else
-        printf("File created");
+        printf("File created\n");
     fclose(ptr);
 }
 
@@ -98,7 +89,7 @@ void createwithcot(){
     if(ptr==NULL)
         printf("File could not be created\n");
     else
-        printf("File created ");
+        printf("File created\n");
     fclose(ptr);
 }
 
@@ -120,7 +111,33 @@ void getcot(char string[]){
                     string[++counter]=e;
                 }
             }
+            else{
+                string[counter]=c;
+                string[++counter]=d;
+            }
 
+        }
+        else
+            string[counter]=c;
+        counter++;
+    }
+}
+
+void inputtext(char string[]){
+    char c,d,e;
+    int counter=1;
+    while((c=getcharx())!=' '){
+        if(c=='\\'){
+            if((d=getcharx())=='"')
+                string[counter]=d;
+            else if(d=='n')
+                string[counter]='\n';
+            else if(d=='\\'){
+                if((e=getcharx())=='n'){
+                    string[counter]='\\';
+                    string[++counter]=e;
+                }
+            }
         }
         else
             string[counter]=c;
@@ -140,11 +157,11 @@ void fileinserterspace() {
 //    }
     char *ourroot;
     ourroot = strcat(dir, root);
-    //printf("%s",ourroot);
+    //printf("%s %s",ourroot,root);
     FILE *ptr = fopen(ourroot, "r+");
-    char com[8];
+    char com[8],e;
     char text[500],saver[200],saver2[200];
-    long int line=0,pos=0,entercounter=1,entercounter2=0,entercounter3=1,size=0,size2=0;
+    long int line=0,pos=0,entercounter=1,entercounter2=0,entercounter3=1,size=0;
     char *whole;
     if (ptr == NULL) {
         printf("File could not be created or be opened try again\n");
@@ -152,53 +169,66 @@ void fileinserterspace() {
     else {
         inputcommand(com);
         if (strcmp(com, "--str") == 0) {
-            getchar();
+            getcharx();
             if ((c = getcharx()) == '"')
                 getcot(text);
-            else
+            else  {
+                text[0]=c;
                 inputtext(text);
+            }
             inputcommand(com);
             if (strcmp(com, "--pos") == 0) {
                 scanf("%ld%c%ld", &line, &c, &pos);
+//                 for (c = getc(ptr); c != EOF; c = getc(ptr)) {
+//                     if(c=='\n' && entercounter<line)
+//                         enterbefore++;
+//                     if (c == '\n' || ((c!='\0' || c!=EOF)&& e=='\n'))
+//                         entercounter++;
+//                     if(entercounter<line)
+//                         entercounter2++;
+//                     e=c;
+//                 }
                 while (fgets(saver, 200, ptr) != NULL) {
-                    if(entercounter<line)
-                        entercounter2+= strlen(saver);
+                    if(entercounter<line) {
+                        entercounter2 += strlen(saver)+1;
+                    }
                     entercounter++;
                 }
                 //printf("%ld %d",entercounter2,entercounter);
-                if(line<=entercounter){
+                if(line<=entercounter || line==1){
                     rewind(ptr);
-                    //printf("%ld %s %ld %ld ", ftell(ptr),text,line,pos);
+                    // printf("%ld %s %ld %ld ", ftell(ptr),text,line,pos);
                     while (fgets(saver, 200, ptr) != NULL) {
-                        if(entercounter3==line) {
+                        if (entercounter3 == line) {
                             size = strlen(saver);
-                            //printf("%d", size);
-                            if (size >= pos) {
-                                size2 = strlen(text);
-                                fseek(ptr, entercounter2 + pos, SEEK_SET);
-                                long int j = 0;
-                                for (long int i = entercounter2 + pos+1; (c = fgetc(ptr)) != EOF; ++i) {
-                                    saver2[j++] = c;
-                                }
-                                saver2[j] = '\0';
-                                whole = strcat(text, saver2);
-                                //printf("%s", whole);
-                                // printf("%d %d", ftell(ptr), pos);
-                                fseek(ptr, entercounter2 + pos+1, SEEK_SET);
-                                fputs(text, ptr);
-
-                                fclose(ptr);
-                                break;
-                            } else if (size < pos) {
-                                printf("You cant write in that position\n");
-                                fclose(ptr);
-                                break;
-                            }
-                        }
-                        else
+                            break;
+                        } else
                             entercounter3++;
-
                     }
+                    //printf("%d", size);
+                    if (size >= pos) {
+                        fseek(ptr, entercounter2 + pos, SEEK_SET);
+                        long int j = 0;
+                        for (long int i = entercounter2 + pos; (c = fgetc(ptr)) != EOF; ++i) {
+                            saver2[j++] = c;
+                        }
+                        saver2[j] = '\0';
+                        whole = strcat(text, saver2);
+                        //printf("%s", whole);
+                        //printf("%d %d", ftell(ptr), pos);
+                        fseek(ptr, entercounter2 + pos, SEEK_SET);
+                        if(!fputs(text, ptr))
+                            printf("Successful\n");
+                        else
+                            printf("Unsuccessful\n");
+
+                        fclose(ptr);
+                    }
+                    else {
+                        printf("You cant write in that position\n");
+                        fclose(ptr);
+                    }
+                    fclose(ptr);
 
                 }
                 else {
@@ -217,6 +247,7 @@ void fileinserterspace() {
         }
 
     }
+
 }
 
  void fileinserternonspace(){
@@ -230,24 +261,89 @@ void fileinserterspace() {
 //    }
     char * ourroot;
     ourroot= strcat(dir,root);
-   // printf("%s",ourroot);
-    FILE *ptr=fopen(ourroot,"w");
-     char com[8],c;
-     char text[200];
-     int line=0,pos=0;
+    //printf("%s",ourroot);
+    FILE *ptr=fopen(ourroot,"r+");
+     char com[8],c,e;
+     char text[500],saver[200],saver2[200];
+     long int line=0,pos=0,entercounter=1,entercounter2=0,entercounter3=1,size=0;
+     char *whole;
      if (ptr == NULL) {
          printf("File could not be created or be opened try again\n");
      }
      else {
          inputcommand(com);
-         if (strcmp(com, "--str" )== 0) {
+         if (strcmp(com, "--str") == 0) {
+             getcharx();
              if ((c = getcharx()) == '"')
                  getcot(text);
-             else
-                 inputcommand(text);
+             else  {
+                 text[0]=c;
+                 inputtext(text);
+             }
              inputcommand(com);
-             scanf("%d%c%d",&line,&c,&pos);
-             fclose(ptr);
+             if (strcmp(com, "--pos") == 0) {
+                 scanf("%ld%c%ld", &line, &c, &pos);
+//                 for (c = getc(ptr); c != EOF; c = getc(ptr)) {
+//                     if(c=='\n' && entercounter<line)
+//                         enterbefore++;
+//                     if (c == '\n' || ((c!='\0' || c!=EOF)&& e=='\n'))
+//                         entercounter++;
+//                     if(entercounter<line)
+//                         entercounter2++;
+//                     e=c;
+//                 }
+                 while (fgets(saver, 200, ptr) != NULL) {
+                     if(entercounter<line) {
+                         entercounter2 += strlen(saver)+1;
+                     }
+                     entercounter++;
+                 }
+                 //printf("%ld %d",entercounter2,entercounter);
+                 if(line<=entercounter || line==1){
+                     rewind(ptr);
+                    // printf("%ld %s %ld %ld ", ftell(ptr),text,line,pos);
+                     while (fgets(saver, 200, ptr) != NULL) {
+                         if (entercounter3 == line) {
+                             size = strlen(saver);
+                             break;
+                         } else
+                             entercounter3++;
+                     }
+                             //printf("%d", size);
+                             if (size >= pos) {
+                                 fseek(ptr, entercounter2 + pos, SEEK_SET);
+                                 long int j = 0;
+                                 for (long int i = entercounter2 + pos; (c = fgetc(ptr)) != EOF; ++i) {
+                                     saver2[j++] = c;
+                                 }
+                                 saver2[j] = '\0';
+                                 whole = strcat(text, saver2);
+                                 //printf("%s", whole);
+                                  //printf("%d %d", ftell(ptr), pos);
+                                 fseek(ptr, entercounter2 + pos, SEEK_SET);
+                                 if(!fputs(text, ptr))
+                                     printf("Successful\n");
+                                 else
+                                     printf("Unsuccessful\n");
+
+                                 fclose(ptr);
+                             }
+                             else {
+                                 printf("You cant write in that position\n");
+                                 fclose(ptr);
+                             }
+                             fclose(ptr);
+
+                     }
+                 else {
+                     printf("you cant write in that line\n");
+                     fclose(ptr);
+                 }
+             }
+             else {
+                 printf("Invalid input try again\n");
+                 fclose(ptr);
+             }
          }
          else {
              printf("Invalid input try again\n");
@@ -259,8 +355,10 @@ void fileinserterspace() {
 }
 int main() {
     char com[15],com2[8],c;
-    printf("User Guide:\n A:for creating file or folder:\n   1-createfile --file <file name and address>\n   2-createfile –file <\"file name and address\">"
-           "(if your folder or your filenames have space\n   *Note:if you are willing to create folders only type '\\' at the end\n");
+    printf("User Guide:\n A:for creating file or folder:\n   1-createfile --file <file name and address>\n   2-createfile --file <\"file name and address\">"
+           "(if your folder or your filenames have space\n   *Note:if you are willing to create folders only type '\\' at the end\n   Example:\\root\\1\\abc.txt\n"
+           " B:insertfile:\n    1-insertstr –file <file name> –str <str> —pos <line no>:<start position>\n    2-You can enter string or filename with cotation same as createfile"
+           "command\n");
     inputcommand(com);
     while(strcmp(com,"exit")!=0){
         if(strcmp(com,"createfile")==0){
@@ -288,7 +386,7 @@ int main() {
                     fileinserterspace();
                 }
                 else
-                    printf("Invalid Input");
+                    printf("Invalid Input\n");
             }
         }
         else {
