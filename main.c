@@ -672,7 +672,7 @@ int copy() {
     char dir[30] = "C:\\Users\\Amirhosein";
     char *ourroot;
     FILE *ptr;
-    long int line, pos, entercounter = 1, entercounter2 = 0, entercounter3 = 0, size = 0, sizego,entercounter4=0;
+    long int line, pos, entercounter = 1, entercounter2 = 0, entercounter3 = 0, size = 0, sizego,entercounter4=1;
     c = getcharx();
     //printf("%c",c);
     if (c == '\\') {
@@ -724,11 +724,14 @@ int copy() {
     rewind(ptr);
     while (fgets(saver, 200, ptr) != NULL) {
         if (entercounter4 == line) {
-            size = strlen(saver);
-            //printf(" %d",size);
+            size = ftell(ptr)-entercounter4 - size;
+             //printf("%d", size);
             break;
-        } else
+        } else {
+            size = ftell(ptr)-entercounter4;
+            // printf("%d  ",size);
             entercounter4++;
+        }
     }
     if(pos>size)
         return 4;
