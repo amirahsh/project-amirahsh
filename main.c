@@ -197,7 +197,8 @@ void fileinserterspace() {
                     entercounter++;
                 }
                 //printf("%ld %d",entercounter2,entercounter);
-                if(line<=entercounter || line==1){
+                fseek(ptr,-1,SEEK_END);
+                if(line<entercounter || line==1 ||(line==entercounter && fgetc(ptr)=='\n')){
                     rewind(ptr);
                     // printf("%ld %s %ld %ld ", ftell(ptr),text,line,pos);
                     while (fgets(saver, 200, ptr) != NULL) {
@@ -306,7 +307,8 @@ void fileinserterspace() {
                      entercounter++;
                  }
                  //printf("%ld %d",entercounter2,entercounter);
-                 if(line<=entercounter || line==1){
+                 fseek(ptr,-1,SEEK_END);
+                 if(line<entercounter || line==1 ||(line==entercounter && fgetc(ptr)=='\n')){
                      rewind(ptr);
                     // printf("%ld %s %ld %ld ", ftell(ptr),text,line,pos);
                      while (fgets(saver, 200, ptr) != NULL) {
@@ -322,6 +324,7 @@ void fileinserterspace() {
                                      printf("Not successful to move pointer\n");
                                  else {
                                      long int j = 0;
+
                                      for (long int i = entercounter2 + pos; (c = fgetc(ptr)) != EOF; ++i) {
                                          saver2[j++] = c;
                                      }
@@ -448,9 +451,10 @@ int removex(){
             entercounter++;
         }
         //printf("%ld %ld %ld %ld %ld %c %c", ftell(ptr),line,pos,entercounter2,entercounter,e,way);
-        if(entercounter<line)
-            return 3;
         entercounter3= ftell(ptr);
+        fseek(ptr,-1,SEEK_END);
+        if((entercounter<line || (entercounter==line && fgetc(ptr)!='\n' && line != 1)))
+            return 3;
         rewind(ptr);
         while (fgets(saver, 200, ptr) != NULL) {
             if (entercounter4 == line) {
@@ -463,7 +467,14 @@ int removex(){
                 entercounter4++;
             }
         }
-        if(pos>size)
+        long int y=0;char a;
+        if(line==entercounter-1){
+            fseek(ptr,-1,SEEK_END);
+            if((a= fgetc(ptr))!='\n')
+                y++;
+            // printf("%c",a);
+        }
+        if(pos>size+y)
             return 4;
         long int j = 0;
         rewind(ptr);
@@ -501,7 +512,7 @@ int removex(){
         else if(way=='b') {
             if(entercounter2-sizego+pos<0)
                 return 5;
-            for (long int i =0; i < entercounter2-sizego+pos-1 && (c = fgetc(ptr)) != EOF; ++i) {
+            for (long int i =0; i < entercounter2-sizego+pos-entercounter4+1 && (c = fgetc(ptr)) != EOF; ++i) {
                 saver2[j++] = c;
             }
             saver2[j]='\0';
@@ -560,9 +571,10 @@ int removex(){
             entercounter++;
         }
         //printf("%ld %ld %ld %ld %ld %c %c", ftell(ptr),line,pos,entercounter2,entercounter,e,way);
-        if(entercounter<line)
-            return 3;
         entercounter3= ftell(ptr);
+        fseek(ptr,-1,SEEK_END);
+        if((entercounter<line || (entercounter==line && fgetc(ptr)!='\n' && line != 1)))
+            return 3;
         rewind(ptr);
         while (fgets(saver, 200, ptr) != NULL) {
             if (entercounter4 == line) {
@@ -575,7 +587,14 @@ int removex(){
                 entercounter4++;
             }
         }
-        if(pos>size)
+        long int y=0;char a;
+        if(line==entercounter-1){
+            fseek(ptr,-1,SEEK_END);
+            if((a= fgetc(ptr))!='\n')
+                y++;
+            // printf("%c",a);
+        }
+        if(pos>size+y)
             return 4;
         long int j = 0;
         rewind(ptr);
@@ -612,7 +631,7 @@ int removex(){
         else if(way=='b') {
             if(entercounter2-sizego+pos<0)
                 return 5;
-            for (long int i =0; i < entercounter2-sizego+pos-1 && (c = fgetc(ptr)) != EOF; ++i) {
+            for (long int i =0; i < entercounter2-sizego+pos-entercounter4+1 && (c = fgetc(ptr)) != EOF; ++i) {
                 saver2[j++] = c;
             }
             saver2[j]='\0';
@@ -698,9 +717,10 @@ int copy() {
 
     long int j = 0;
     // printf(" %ld %ld %ld %ld %ld %c %c", ftell(ptr),line,pos,entercounter2,entercounter,e,way);
-    if (entercounter < line)
-        return 3;
     entercounter3= ftell(ptr);
+    fseek(ptr,-1,SEEK_END);
+    if((entercounter<line || (entercounter==line && fgetc(ptr)!='\n' && line != 1)))
+        return 3;
     rewind(ptr);
     while (fgets(saver, 200, ptr) != NULL) {
         if (entercounter4 == line) {
@@ -789,15 +809,16 @@ int cut(){
         }
         entercounter++;
     }
-    // printf(" %ld %ld %ld %ld %ld %c %c %ld %ld", ftell(ptr),line,pos,entercounter2,entercounter,e,way,entercounter3,sizego);
-    if ( entercounter < line)
-        return 3;
+     //printf(" %ld %ld %ld %ld %ld %c %c %ld %ld", ftell(ptr),line,pos,entercounter2,entercounter,e,way,entercounter3,sizego);
     entercounter3= ftell(ptr);
+    fseek(ptr,-1,SEEK_END);
+    if((entercounter<line || (entercounter==line && fgetc(ptr)!='\n' && line != 1)))
+        return 3;
     rewind(ptr);
     while (fgets(saver, 200, ptr) != NULL) {
         if (entercounter4 == line) {
             size = ftell(ptr)-entercounter4 - size;
-            //printf("%d", size);
+           // printf("%d", size);
             break;
         } else {
             size = ftell(ptr)-entercounter4;
@@ -805,7 +826,15 @@ int cut(){
             entercounter4++;
         }
     }
-    if(pos>size)
+    long int y=0;char a;
+
+    if(line==entercounter-1){
+        fseek(ptr,-1,SEEK_END);
+        if((a= fgetc(ptr))!='\n')
+            y++;
+       // printf("%c",a);
+    }
+    if(pos>size+y)
         return 4;
     long int j = 0;
     rewind(ptr);
@@ -852,7 +881,7 @@ int cut(){
     else if(way=='b') {
         if(entercounter2-sizego+pos<0)
             return 5;
-        for (long int i =0; i < entercounter2-sizego+pos-1 && (c = fgetc(ptr)) != EOF; ++i) {
+        for (long int i =0; i < entercounter2-sizego+pos-entercounter4+1 && (c = fgetc(ptr)) != EOF; ++i) {
             saver2[j++] = c;
         }
         saver2[j]='\0';
@@ -866,6 +895,7 @@ int cut(){
         whole = strcat(saver2, saver3);
         if (entercounter2 - sizego + pos < 0)
             return 5;
+        //printf("%s byyyyy %s",saver2,saver3);
         if (fseek(ptr, entercounter2 + pos -sizego-1 , SEEK_SET) != 0)
             return 5;
         j=0;
@@ -886,6 +916,67 @@ int cut(){
             return 8;
         }
     }
+}
+int paste(){
+    char c, s, e, way;
+    char root[70] = {0}, com[15], saver[200];
+    char dir1[30] = "C:\\Users\\Amirhosein\\";
+    char dir[30] = "C:\\Users\\Amirhosein";
+    char *ourroot;
+    FILE *ptr;
+    long int line, pos, entercounter = 1, entercounter2 = 0, entercounter3 = 0, size = 0, sizego,entercounter4=0;
+    c = getcharx();
+    //printf("%c",c);
+    if (c == '\\') {
+        inputcommand(root);
+        ourroot = strcat(dir1, root);
+        // printf("%s",ourroot);
+        ptr = fopen(ourroot, "r");
+        if (ptr == NULL) {
+            return 1;
+        }
+    } else if (c == '"') {
+        getcot(root);
+        ourroot = strcat(dir, root);
+        // printf("%s %s",ourroot,root);
+        ptr = fopen(ourroot, "r");
+        if (ptr == NULL) {
+            return 1;
+        }
+    }
+    inputcommand(com);
+    // printf(" %s",com);
+    if (strcmp(com, "--pos") != 0) {
+        return 2;
+    }
+    scanf("%ld%c%ld", &line, &s, &pos);
+    inputcommand(com);
+    //printf(" %s",com);
+    while (fgets(saver, 200, ptr) != NULL) {
+        if (entercounter < line) {
+            entercounter2 += strlen(saver) + 1;
+        }
+
+        entercounter++;
+    }
+
+    long int j = 0;
+    // printf(" %ld %ld %ld %ld %ld %c %c", ftell(ptr),line,pos,entercounter2,entercounter,e,way);
+    entercounter3= ftell(ptr);
+    fseek(ptr,-1,SEEK_END);
+    if((entercounter<line || (entercounter==line && fgetc(ptr)!='\n' && line != 1)))
+        return 3;
+    rewind(ptr);
+    while (fgets(saver, 200, ptr) != NULL) {
+        if (entercounter4 == line) {
+            size = strlen(saver);
+            //printf(" %d",size);
+            break;
+        } else
+            entercounter4++;
+    }
+    if(pos>size)
+        return 4;
 }
 void switchx(int answer){
     switch (answer) {
@@ -986,6 +1077,15 @@ int main() {
             getcharx();
             if (strcmp(com2, "--file") == 0) {
                 answer = cut();
+                switchx(answer);
+            } else
+                printf("Invalid input\n");
+        }
+        else if(strcmp(com,"pastestr")==0) {
+            inputcommand(com2);
+            getcharx();
+            if (strcmp(com2, "--file") == 0) {
+                answer = paste();
                 switchx(answer);
             } else
                 printf("Invalid input\n");
