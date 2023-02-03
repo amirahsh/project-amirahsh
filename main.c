@@ -1151,11 +1151,11 @@ void inputfind(char string[]){
 
 }
 int findstr() {
-    char c, e, *ourroot, text[300], text2[300], com[15], root[70], saver[300], *wherefind = "";
+    char c, e, *ourroot, text[300], text2[300], com[15], root[70], saver[400], *wherefind = "";
     char dir1[30] = "C:\\Users\\Amirhosein\\";
     char dir[30] = "C:\\Users\\Amirhosein";
-    char restof[10], *whole, firstpart[10];
-    int x = 0,entercounter=0;
+    char wholefile[8000], *whole,*token,*token2[30];
+    int x = 0;
     FILE *ptr,*ptrr;
     //getcharx();
     if ((c = getcharx()) == '"')
@@ -1191,7 +1191,7 @@ int findstr() {
         }
     }
     //printf("%s",text);
-    int flag=1,whichway=0;
+    int flag=1,entercounter=0;
     if(text[strlen(text) - 1] == '*' && text[strlen(text) - 2] !='\\')
         flag=0;
     if (text[0] != '*'  && flag==1 ) {
@@ -1223,18 +1223,24 @@ int findstr() {
         }
     }
     text2[strlen(text2)+1]='\0';
-    int i=1,l=1;
+    int counter=0;
+//        for (int i = 0; i < strlen(text2); ++i) {
+//            if(text2[i]==' ')
+//                counter++;
+//        }
+    int i=1,l=1,times=0;
     //printf("%s",text2);
-    if ((e = getcharx()) == '\n') {
+    if ((e = getcharx()) == '\n' ) {
         if (text[0] != '*' && flag==1) {
             while (fgets(saver, 300, ptr) != NULL) {
                 if ((wherefind = strstr(saver, text2)) != NULL) {
                     int y = (int) (wherefind - saver);
-                    printf("at position :%d ", x + y);
+                    printf("at position :%d ", x + y-entercounter);
                     fclose(ptr);
                     return 1;
                 }
                 x = ftell(ptr);
+                entercounter++;
             }
             if (wherefind == NULL) {
                 fclose(ptr);
@@ -1253,21 +1259,23 @@ int findstr() {
                         //printf("%d", ftell(ptr));
                         char star;
                         for (i=1; (star=fgetc(ptr))!=' ' && star!='\n'&& x+y-i!=-1;++i) {
-                            // printf(" %c %d",star, ftell(ptr));
+                           // printf(" %c %d",star, ftell(ptr));
                             y--;
                             fseek(ptr,-2,SEEK_CUR);
                         }
                         if(i!=1) {
                             //printf("%d",y);
-                            printf("at position :%d ", x + y);
+                            printf("at position :%d ", x + y-entercounter);
+                            times++;
                             fclose(ptr);
                             return 1;
                         }
                     }
                     //printf("%d %d", strlen(saver), ftell(ptr));
                     x = ftell(ptr);
+                    entercounter++;
                 }
-                if (wherefind == NULL || i==1) {
+                if (times==0) {
                     fclose(ptr);
                     return -1;
                 }
@@ -1281,33 +1289,41 @@ int findstr() {
                         //printf("%d", ftell(ptr));
                         char star;
                         for (l=1; (star=fgetc(ptr))!=' ' && star!='\n';++l) {
-                            //printf(" %c %d",star, ftell(ptr));
+                             //printf(" %c %d",star, ftell(ptr));
                         }
                         if(l!=1) {
                             //printf("%d",y);
-                            printf("at position :%d ", x + y);
+                            printf("at position :%d ", x + y-entercounter);
+                            times++;
                             fclose(ptr);
                             return 1;
                         }
                     }
                     //printf("%d %d", strlen(saver), ftell(ptr));
                     x = ftell(ptr);
+                    entercounter++;
                 }
-                if (wherefind == NULL || l==1) {
+                if (times==0) {
                     fclose(ptr);
                     return -1;
                 }
             }
         }
     }
-    else if (e == ' ') {
-        int ii, j, found,whereshould;
+        else if (e == ' ') {
+        char *dup, *dup2;
+        int ii, j,at, found, whereshould, z;
         int strLen, wordLen, timecounter = 0;
-        int places[30];
+        char delim[] = " ,.!:;\n";
+        int places[30], placesbyword[30], bywordcounter = 0, bywordcounter2 = 0, bywordcounter3 = 0, bywordplace = 0;
         inputcommand(com);
-        // if (getcharx() == '\n') {
-        if (strcmp(com, "-count") == 0 || strcmp(com, "-at") == 0 || strcmp(com,"-all")==0) {
+        if (strcmp(com, "-count") == 0 || strcmp(com, "-at") == 0 || strcmp(com, "-all") == 0 || strcmp(com, "-byword") == 0) {
+            if(strcmp(com,"-at")==0){
+                scanf("%d", &at);
+            }
             while (fgets(saver, 300, ptrr) != NULL) {
+                dup = strdup(saver);
+                //printf("%s",dup2);
                 // printf(" %dttt", ftell(ptrr));
                 strLen = strlen(saver);
                 wordLen = strlen(text2);
@@ -1320,7 +1336,10 @@ int findstr() {
                         }
                     }
                     if (found == 1) {
+                        bywordplace = 0;
+                        bywordcounter2 = 0;
                         if (text[0] == '*' && flag == 1) {
+                            dup2 = strdup(saver);
                             int y = ii;
                             fseek(ptr, x + y - 1, SEEK_SET);
                             //  printf("%d %d",ii, ftell(ptr));
@@ -1330,70 +1349,150 @@ int findstr() {
                                 y--;
                                 fseek(ptr, -2, SEEK_CUR);
                             }
+                            printf( "%dtt",y,saver);
                             if (i != 1) {
-                                //printf("%d",y);
-                                places[timecounter++] = x+y;
+                                token2[timecounter] = strtok(dup2, delim);
+                                bywordplace += strlen(token2[timecounter]);
+                                while (bywordplace <= y) {
+                                     //printf(" %d %d %s",bywordcounter2,bywordplace,token2[timecounter]);
+                                    bywordcounter2++;
+                                    token2[timecounter] = strtok(NULL, delim);
+                                    bywordplace += strlen(token2[timecounter])+1;
+                                }
+                                placesbyword[timecounter] = bywordcounter + bywordcounter2;
+                                //  printf(" tt%d %d %d ",bywordcounter,bywordcounter2,placesbyword[timecounter]);
+                                places[timecounter++] = x + y-entercounter;
+
                                 //printf("%d", ftell(ptr));
                                 // printf("at position :%d ", x + y);
                             }
                         } else if (text[strlen(text) - 1] == '*' && text[strlen(text) - 2] != '\\') {
+                            dup2 = strdup(saver);
                             int size = strlen(text2);
                             int y = ii;
                             fseek(ptr, x + y + size, SEEK_SET);
                             //printf("%d", ftell(ptr));
                             char star;
 
-                            for (l = 1; (star = fgetc(ptr)) != ' ' && star != '\n' ; ++l) {
+                            for (l = 1; (star = fgetc(ptr)) != ' ' && star != '\n'; ++l) {
                                 // printf(" %c %d",star, ftell(ptr));
                             }
                             if (l != 1) {
+                                dup2 = strdup(saver);
+                                token2[timecounter] = strtok(dup2, delim);
+                                bywordplace += strlen(token2[timecounter]);
+                                while (bywordplace <= y) {
+                                    // printf("%d %d %s",bywordcounter2,bywordplace,token2[timecounter]);
+                                    bywordcounter2++;
+                                    token2[timecounter] = strtok(NULL, delim);
+                                    bywordplace += strlen(token2[timecounter])+1;
+                                }
                                 //printf("yyyyyy");
                                 //printf("at position :%d ", x + y);
-                                places[timecounter++]=x+y;
+                                placesbyword[timecounter]=bywordcounter+bywordcounter2;
+                                places[timecounter++] = x + y-entercounter;
 
                             }
                         } else if (text[0] != '*' && flag == 1) {
-                            places[timecounter++] = x+ii;
+                            dup2 = strdup(saver);
+                            token2[timecounter] = strtok(dup2, delim);
+                            bywordplace += strlen(token2[timecounter]);
+                           // printf("%dii",ii);
+                            while (bywordplace <= ii) {
+                               //  printf("%d ",bywordplace,token2[timecounter]);
+                                bywordcounter2++;
+                                token2[timecounter] = strtok(NULL, delim);
+                                bywordplace += strlen(token2[timecounter])+1;
+                            }
+                            placesbyword[timecounter]=bywordcounter+bywordcounter2;
+                            places[timecounter++] = x + ii-entercounter;
                         }
                     }
+
                 }
                 x = ftell(ptrr);
+                token = strtok(dup, delim);
+                while (token != NULL) {
+                    //printf("%s  ",token);
+                    bywordcounter++;
+                    token = strtok(NULL, delim);
+                }
+                entercounter++;
+
+//                    printf("ftell %d %d ", ftell(ptrr), ftell(ptr));
+                 printf("%d  ",bywordcounter);
             }
-            if (timecounter==0 ) {
-                fclose(ptr);
-                return -1;
-            }
-            else {
-                if (strcmp(com, "-count") == 0) {
-                    printf("%d", timecounter);
+            if (getcharx() == '\n') {
+                if (timecounter == 0) {
                     fclose(ptr);
-                    return 2;
-                } else if (strcmp(com, "-at") == 0) {
-                    int at;
-                    scanf("%d", &at);
+                    fclose(ptrr);
+                    return -1;
+                } else {
+                    if (strcmp(com, "-count") == 0) {
+                        printf("%d ", timecounter);
+                        fclose(ptr);
+                        fclose(ptrr);
+                        return 2;
+                    } else if (strcmp(com, "-at") == 0) {
+                        if (at > timecounter) {
+                            fclose(ptr);
+                            fclose(ptrr);
+                            return -4;
+                        }
+                        printf("%dth times is in %d ", at, places[at - 1]);
+                        fclose(ptr);
+                        fclose(ptrr);
+                        return 3;
+                    } else if (strcmp(com, "-all") == 0) {
+                        for (int k = 0; k < timecounter; ++k) {
+                            printf("%d,", places[k]);
+                        }
+                        fclose(ptr);
+                        fclose(ptrr);
+                        return 4;
+                    } else if (strcmp(com, "-byword") == 0) {
+                        printf("at position: %d ", placesbyword[0]+1-counter);
+                        fclose(ptrr);
+                        fclose(ptr);
+                        return 1;
+                    }
+                }
+            }
+            else{
+                char com2[15];
+                if (timecounter == 0) {
+                    fclose(ptr);
+                    fclose(ptrr);
+                    return -1;
+                }
+                if(strcmp(com,"-at")==0){
+                    inputcommand(com2);
+                    if(strcmp(com2,"-byword")!=0)
+                        return -2;
                     if (at > timecounter) {
                         fclose(ptr);
+                        fclose(ptrr);
                         return -4;
                     }
-                    printf("%dth times is in %d ", at, places[at-1]);
+                    printf("%dth times is in %d ", at, placesbyword[at - 1]+1-counter);
                     fclose(ptr);
+                    fclose(ptrr);
                     return 3;
                 }
                 else if(strcmp(com,"-all")==0){
+                    inputcommand(com2);
                     for (int k = 0; k < timecounter; ++k) {
-                        printf("%d,", places[k]);
-                    }
-                    fclose(ptr);
-                    return 4;
+                        printf("%d,", placesbyword[k] + 1-counter);
+                    }fclose(ptrr);
+                        fclose(ptr);
+                        return 4;
                 }
             }
         }
+        else
+            return -2;
     }
-//        else if(strcmp(com,"-byword")==0){
-//
-//        }
-    // }
-}
+    }
 
 
 
@@ -1426,6 +1525,7 @@ void switchfind(int answer){
 
     }
 }
+
 
 int main() {
     char com[15],com2[8],c;
