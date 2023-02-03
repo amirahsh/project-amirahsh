@@ -1128,8 +1128,6 @@ void getfind(char string[]){
         else if(c=='\\') {
             if((d = getcharx())=='"')
                 string[counter]=d;
-            else if(d=='n')
-                string[counter]='\n';
         }
         else
             string[counter]=c;
@@ -1145,10 +1143,6 @@ void inputfind(char string[]){
         if(c==' ') {
             string[counter]='\0';
             break;
-        }
-        else if(c=='\\'){
-            if((d=getcharx())=='n')
-                string[counter]='\n';
         }
         else
             string[counter]=c;
@@ -1570,7 +1564,7 @@ int replace() {
     char wholefile[8000], *whole, *token, *token2[30];
     int x = 0;
     FILE *ptr, *ptrr,*fileptr;
-//getcharx();
+    getcharx();
     if ((c = getcharx()) == '"')
         getfind(text);
     else {
@@ -1799,7 +1793,101 @@ void switchfind(int answer){
     }
 }
 
+int grep(int sign){
+    char c, e, *ourroot, text[300], com[15], root[70], saver[400],*wherefind,*whichfiles[50];
+    char dir1[30] = "C:\\Users\\Amirhosein\\";
+    char dir[30] = "C:\\Users\\Amirhosein";
+    int times=0,eachfile[50]={0},counter=0;
+    FILE *ptr;
+    if(sign==1 || sign ==2) {
+        inputcommand(com);
+        getcharx();
+        if (strcmp(com, "--str") != 0) {
+            // printf("%s", com);
+            return -1;
+        }
+    }
+    if ((c = getcharx()) == '"')
+        getfind(text);
+    else {
+        text[0] = c;
+        inputfind(text);
+    }
+    inputcommand(com);
+    if(strcmp(com,"--files")!=0) {
+        printf("%s", com);
+        return -1;
+    }
+    //printf("%s %s",com,text);
+    while(getcharx()!='\n') {
+        int sign2=0;
+        if ((c = getcharx()) == '\\') {
+            inputcommand(root);
+            ourroot = strcat(dir1, root);
+            //printf("%s",ourroot);
+            ptr = fopen(ourroot, "r");
+            if (ptr == NULL) {
+                return -2;
+            }
+        } else if (c == '"') {
+            getcot(root);
+            ourroot = strcat(dir, root);
+            // printf("%s %s",ourroot,root);
+            ptr = fopen(ourroot, "r");
+            if (ptr == NULL) {
+                return -2;
+            }
+        }
+        while (fgets(saver, 300, ptr) != NULL) {
+            if ((wherefind = strstr(saver, text)) != NULL) {
+                if(sign==3)
+                    printf("In file %s :%s",root,saver);
+                times++;
+                sign2=1;
+                if(eachfile[counter]!=1){
+                    whichfiles[counter]= strdup(root);
+                    //printf("%s",whichfiles[counter]);
+                }
+            }
+        }
+        fclose(ptr);
+        if(sign2==1)
+            counter++;
 
+    }
+    //printf("%d",counter);
+    if(times==0)
+        return -4;
+    else if(sign==1){
+        printf("%d\n",times);
+        return 6;
+    }
+    else if(sign==2){
+        for (int i = 0; i<counter; ++i) {
+            printf("%s\n",whichfiles[i]);
+        }
+        return 6;
+    }
+}
+void switchgrep(int answer) {
+    switch (answer) {
+        case -1:
+            printf("Invalid input try again\n");
+            break;
+        case -2:
+            printf("File couldnt be opened or be created\n");
+            break;
+        case -3:
+            printf("returned -1 string not found\n");
+            break;
+        case -4:
+            printf("Not found in any file\n");
+            break;
+        case 6:
+            printf("");
+            break;
+    }
+}
 int main() {
     char com[15],com2[8],c;
     int answer=-1;
@@ -1899,6 +1987,21 @@ int main() {
             if (strcmp(com2, "--str1") == 0) {
                 answer = replace();
                 switchfind(answer);
+            } else
+                printf("Invalid input\n");
+        }
+        if (strcmp(com, "grep")==0) {
+            inputcommand(com2);
+            getcharx();
+            if (strcmp(com2, "-c") == 0) {
+                answer = grep(1);
+                switchgrep(answer);
+            } else if (strcmp(com2, "-l") == 0) {
+                answer=grep(2);
+                switchgrep(answer);
+            } else if (strcmp(com2, "--str") == 0) {
+                answer=grep(3);
+                switchgrep(answer);
             } else
                 printf("Invalid input\n");
         }
