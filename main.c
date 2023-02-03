@@ -1128,6 +1128,8 @@ void getfind(char string[]){
         else if(c=='\\') {
             if((d = getcharx())=='"')
                 string[counter]=d;
+            else if(d=='n')
+                string[counter]='\n';
         }
         else
             string[counter]=c;
@@ -1143,6 +1145,10 @@ void inputfind(char string[]){
         if(c==' ') {
             string[counter]='\0';
             break;
+        }
+        else if(c=='\\'){
+            if((d=getcharx())=='n')
+                string[counter]='\n';
         }
         else
             string[counter]=c;
@@ -1494,6 +1500,268 @@ int findstr() {
     }
     }
 
+int cutpaste(int pos,int sizego,char string[],char ourroot[]){
+    char saver2[4000],saver3[4000],c,saver[500],*whole1;
+    FILE *ptr;
+    ptr= fopen(ourroot,"r");
+    int j=0,x=0,entercounter5=0;
+    //printf("ttt%d",pos);
+    for (int i = 0; i < pos&& (c = fgetc(ptr)) != EOF ; ++i) {
+        //printf("%diiiiii",i);
+        //printf("%c",c);
+        saver2[j++] = c;
+    }
+    saver2[j] = '\0';
+    // printf("%s\n\n\n",saver2);
+    long int where= ftell(ptr);
+    //printf("%d",sizego);
+    //fseek(ptr,  pos+sizego , SEEK_SET);
+    j=0;
+    for (long int i = 0; i < sizego && (c = fgetc(ptr)) != EOF; ++i) {
+        ;
+    }
+
+    j = 0;
+//    long int where2= ftell(ptr);
+//    fseek(ptr,where,SEEK_SET);
+//    while (fgets(saver, 200, ptr) != NULL) {
+//        if (ftell(ptr)>=where2) {
+//            x=entercounter5;
+//            break;
+//        } else {
+//            entercounter5++;
+//        }
+//    }
+//    printf("%d %d %d ",pos,sizego,x);
+//    if (fseek(ptr, pos + sizego+x , SEEK_SET) != 0)
+//        return 5;
+//    printf("%d", ftell(ptr));
+    //printf("%d", sizego);
+    for (; (c = fgetc(ptr)) != EOF;) {
+        saver3[j++] = c;
+    }
+    saver3[j] = '\0';
+    whole1= strcat(saver2,string);
+    fclose(ptr);
+    //printf("%s\n\n\n\n",saver3);
+    ptr= fopen(ourroot,"w");
+    if (!fputs(whole1, ptr)) {
+        fclose(ptr);
+        fopen(ourroot,"a+");
+        if (!fputs(saver3, ptr)) {
+            fclose(ptr);
+            return 5;
+        }
+        else {
+            fclose(ptr);
+            return -5;
+        }
+    } else {
+        fclose(ptr);
+        return -5;
+    }
+
+}
+
+int replace() {
+    char c, e, *ourroot, text[300], text2[300],texttowrite[200], com[15], root[70], saver[400], *wherefind = "";
+    char dir1[30] = "C:\\Users\\Amirhosein\\";
+    char dir[30] = "C:\\Users\\Amirhosein";
+    char wholefile[8000], *whole, *token, *token2[30];
+    int x = 0;
+    FILE *ptr, *ptrr,*fileptr;
+//getcharx();
+    if ((c = getcharx()) == '"')
+        getfind(text);
+    else {
+        text[0] = c;
+        inputfind(text);
+    }
+//printf("%s",text);
+    inputcommand(com);
+    if (strcmp(com, "--str2") != 0) {
+        return -2;
+    }
+    getcharx();
+    if ((c = getcharx()) == '"')
+        getcot(texttowrite);
+    else  {
+        texttowrite[0]=c;
+        inputtext(texttowrite);
+    }
+    inputcommand(com);
+    if(strcmp(com,"--file")!=0)
+        return -2;
+    int flag = 1, entercounter = 0,howmuch=0;
+    getcharx();
+    if ((c = getcharx()) == '\\') {
+        inputcommand(root);
+
+        ourroot = strcat(dir1, root);
+//printf(" %s",ourroot);
+        ptr = fopen(ourroot, "r");
+        ptrr = fopen(ourroot, "r");
+        if (ptr == NULL) {
+            return -3;
+        }
+    }
+    else if (c == '"') {
+        getcot(root);
+        ourroot = strcat(dir, root);
+// printf("%s %s",ourroot,root);
+        ptr = fopen(ourroot, "r");
+        ptrr = fopen(ourroot, "r");
+        if (ptr == NULL) {
+            return -3;
+        }
+    }
+//printf("%s",text);
+    if (text[strlen(text) - 1] == '*' && text[strlen(text) - 2] != '\\')
+        flag = 0;
+    if (text[0] != '*' && flag == 1) {
+//            char *e;
+//            e = strrchr(file, '\\');
+//            (int)(e-file)
+        for (int i = 0, j = 0; text[i] != '\0'; ++i, ++j) {
+            if (text[i] == '\\' && text[i + 1] == '*')
+                text2[j] = text[++i];
+            else
+                text2[j] = text[i];
+        }
+    } else if (text[0] == '*') {
+        for (int i = 1, j = 0; text[i] != '\0'; ++i, ++j) {
+            if (text[i] == '\\' && text[i + 1] == '*')
+                text2[j] = text[++i];
+            else
+                text2[j] = text[i];
+        }
+    } else if (flag == 0) {
+        for (int i = 0, j = 0;; ++i, ++j) {
+            if (text[i] == '*' && text[i - 1] != '\\')
+                break;
+            if (text[i] == '\\' && text[i + 1] == '*')
+                text2[j] = text[++i];
+            else
+                text2[j] = text[i];
+        }
+    }
+    text2[strlen(text2) + 1] = '\0';
+    int counter = 0,at;
+    if((e=getcharx())=='\n')
+        howmuch=1;
+    else if(e==' '){
+        inputcommand(com);
+        if(strcmp(com,"-at")==0)
+            scanf("%d",&at);
+    }
+    //printf("%s",com);
+    int ii, j, found;
+    int i,l;
+    int strLen, wordLen, timecounter = 0;
+    int places[30];
+    int sizetogive[30],wherefinish[30];
+    while (fgets(saver, 300, ptrr) != NULL) {
+        //printf("%s",dup2);
+        // printf(" %dttt", ftell(ptrr));
+        strLen = strlen(saver);
+        wordLen = strlen(text2);
+        for (ii = 0; ii <= strLen - wordLen; ii++) {
+            found = 1;
+            for (j = 0; j < wordLen; j++) {
+                if (saver[ii + j] != text2[j]) {
+                    found = 0;
+                    break;
+                }
+            }
+            if (found == 1) {
+                if (text[0] == '*' && flag == 1) {
+                    int y = ii;
+                    fseek(ptr, x + y - 1, SEEK_SET);
+                    //  printf("%d %d",ii, ftell(ptr));
+                    char star;
+                    for (i = 0; (star = fgetc(ptr)) != ' ' && star != '\n' && x + y - i != -1; i++) {
+                        //printf(" %c %d",star, ftell(ptr));
+                        y--;
+                        fseek(ptr, -2, SEEK_CUR);
+                    }
+                    // printf( "%dtt",y,saver);
+                    if (i != 0) {
+                        //  printf(" tt%d %d %d ",bywordcounter,bywordcounter2,placesbyword[timecounter]);
+                        places[timecounter] = x + y-entercounter;
+                        sizetogive[timecounter++]=i+wordLen;
+                        if(howmuch==1 &&timecounter==1)
+                            return cutpaste(places[0],sizetogive[0],texttowrite,ourroot);
+                        //printf("%d", ftell(ptr));
+                        // printf("at position :%d ", x + y);
+                    }
+                } else if (text[strlen(text) - 1] == '*' && text[strlen(text) - 2] != '\\') {
+                    int size = strlen(text2);
+                    int y = ii;
+                    fseek(ptr, x + y + size, SEEK_SET);
+                    //printf("%d", ftell(ptr));
+                    char star;
+
+                    for (l = 0; (star = fgetc(ptr)) != ' ' && star != '\n'; ++l) {
+                        // printf(" %c %d",star, ftell(ptr));
+                    }
+                    if (l != 0) {
+                        //printf("at position :%d ", x + y);
+                        places[timecounter] = x + y-entercounter;
+                        sizetogive[timecounter++]=l+wordLen;
+                        if(howmuch==1 && timecounter==1)
+                            return cutpaste(places[0],sizetogive[0],texttowrite,ourroot);
+
+                    }
+                } else if (text[0] != '*' && flag == 1) {
+                    places[timecounter] = x + ii-entercounter;
+                    sizetogive[timecounter++]= wordLen;
+                    //printf(" %lld %lld", strlen(text2),i);
+                    if(howmuch==1 && timecounter==1)
+                        return cutpaste(places[0],sizetogive[0],texttowrite,ourroot);
+                }
+            }
+
+        }
+        x = ftell(ptrr);
+        entercounter++;
+
+//                    printf("ftell %d %d ", ftell(ptrr), ftell(ptr));
+    }
+    if (timecounter == 0) {
+        fclose(ptr);
+        fclose(ptrr);
+        return -1;
+    }
+    else {
+        if (strcmp(com, "-at") == 0) {
+            if (at > timecounter) {
+                fclose(ptr);
+                fclose(ptrr);
+                return -4;
+            }
+            //printf("%dth times is in %d ", at, places[at - 1]);
+            fclose(ptr);
+            fclose(ptrr);
+            return cutpaste(places[at-1],sizetogive[at-1],texttowrite,ourroot);
+        }
+        else if (strcmp(com, "-all") == 0) {
+            fclose(ptr);
+            fclose(ptrr);
+            int a,sizeforward=0,w;
+            for (int k = 0; k < timecounter; ++k) {
+               // printf("%d,", places[k]);
+                w=places[k]+sizeforward;
+                a=cutpaste(w,sizetogive[k],texttowrite,ourroot);
+                sizeforward+=strlen(texttowrite)-sizetogive[k];
+                if(a==5)
+                    continue;
+                else break;
+            }
+            return a;
+        }
+    }
+
+}
 
 
 void switchfind(int answer){
@@ -1506,6 +1774,9 @@ void switchfind(int answer){
             break;
         case -4:
             printf("We dont have that much of you have searched in ourfile\n");
+            break;
+        case -5:
+            printf("Unssuccessful\n");
             break;
         case -1:
             printf("returned -1 string not found\n");
@@ -1522,6 +1793,8 @@ void switchfind(int answer){
         case 4:
             printf("\n");
             break;
+        case 5:
+            printf("Successful\n");
 
     }
 }
@@ -1616,6 +1889,15 @@ int main() {
             getcharx();
             if (strcmp(com2, "--str") == 0) {
                 answer = findstr();
+                switchfind(answer);
+            } else
+                printf("Invalid input\n");
+        }
+        else if(strcmp(com,"replace")==0){
+            inputcommand(com2);
+            getcharx();
+            if (strcmp(com2, "--str1") == 0) {
+                answer = replace();
                 switchfind(answer);
             } else
                 printf("Invalid input\n");
