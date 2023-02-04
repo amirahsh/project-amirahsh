@@ -32,14 +32,15 @@ void undotosave(char ourroot[],int wheretowrite) {
     char saver[400], *whole = {0}, *whole2 = {0};
     FILE *ptr;
     int i = 0;
-    int which;
+    int which,sign=0;
      //printf("sssssssss%d  %d",wheretowrite,howmanyfiles);
     if (wheretowrite == -2) {
+        sign=1;
         for (i = 0; i < howmanyfiles * 10+1; i += 10) {
-            printf("%s %s",ourroot,fileundo[i].name);
+           // printf("%s %s",ourroot,fileundo[i].name);
             if (strcmp(ourroot, fileundo[i].name) == 0) {
                 //  printf("ssss");
-                which = howmanyeachfile[i / 10];
+                which = howmanyeachwas[i / 10]%10;
                 wheretowrite = which + i;
             }
         }
@@ -63,10 +64,10 @@ void undotosave(char ourroot[],int wheretowrite) {
         fileundo[wheretowrite].file = calloc(size + 1, 1);
 
         fread(fileundo[wheretowrite].file,1,size,ptr);
-        printf("%s ",fileundo[wheretowrite].file);
+        //printf("%s ",fileundo[wheretowrite].file);
         fclose(ptr);
-        howmanyeachfile[howmanyfiles]++;
-        howmanyeachwas[howmanyfiles]++;
+            howmanyeachfile[howmanyfiles]++;
+            howmanyeachwas[howmanyfiles]++;
 
         //printf("%s",whole2);
 //    for (int i = 0; i < 1500; i+=10) {
@@ -81,24 +82,30 @@ int undo(char ourroot[]){
     char wholefile[8000], *whole, *token;
     FILE *ptr;
     int which,i;
-    for ( i = 0; i < howmanyfiles*10; i+=10) {
+    for ( i = 0; i < howmanyfiles*10+1; i+=10) {
         if(strcmp(ourroot,fileundo[i].name)==0) {
             if(howmanyeachwas[i/10]-1==0){
                 printf("File just been created you cannot  do undo\n");
                 return -1;
             }
-            which = --howmanyeachfile[i /10] ;
-            printf("%d",which);
+            howmanyeachfile[i/10]-=2;
+            which = howmanyeachfile[i /10] ;
+            printf("%dtttt",which);
             if(which<0){
                 which=howmanyeachwas[i/10];
-                howmanyeachfile[i /10]=howmanyeachwas[i /10];
+                howmanyeachfile[i /10]=howmanyeachwas[i /10]%10;
             }
+//            createfile --file \root\test.txt
+//            insertstr --file \root\test.txt --str salam --pos 1:0
+//            insertstr --file \root\test.txt --str khunbi --pos 1:0
             ptr = fopen(ourroot, "w");
-            printf("%d %d",howmanyeachfile[i/10],howmanyeachwas[i/10]);
+            howmanyeachfile[i/10]++;
+            //printf("%d %d",howmanyeachfile[i/10],howmanyeachwas[i/10]);
             if (ptr == NULL) {
                 printf("File could not be created or be opened\n");
                 return -1;
             }
+            printf("%s %s",fileundo[which].file,fileundo[which-1].file);
             if(!fputs(fileundo[which].file,ptr))
                 printf("Successful\n");
             else printf("Unssuccseful\n");
